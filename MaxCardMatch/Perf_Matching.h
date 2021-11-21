@@ -1,13 +1,13 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef PERF_MATCHING_H
+#define PERF_MATCHING_H
 
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "graph_class/graph.hpp"
+#include "auxiliary_classes/graph.h"
 
-using ED::Graph;
+void find_edge(Graph& graph, NodeId& node_x, NodeId& node_y, bool found);
 
-Graph read_file();
+void perfect_matching(Graph& graph);
 
 #endif

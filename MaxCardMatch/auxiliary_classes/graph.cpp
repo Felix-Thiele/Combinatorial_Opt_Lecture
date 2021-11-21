@@ -1,18 +1,17 @@
-#include "graph.hpp"
-
+#include "graph.h"
 #include <string>
+#include <iostream>
 #include <stdexcept>
 #include <algorithm>
 
 
 void xcp_check (bool condition, std::string msg)
-{ if (not condition) { throw std::runtime_error(msg); } }
+{ if (not condition) { throw msg; } }
 
 
 
-Graph::Graph (size_type num_nodes):partition(Partition(num_nodes))
+Graph::Graph (size_type num_nodes):_nodes(num_nodes),_num_non_deleted_nodes(num_nodes),_partition(Partition<NodeId>(num_nodes))
 {
-    std::vector<Node> _nodes(num_nodes);
     _num_edges = 0;
     init_tree();
 }
@@ -20,22 +19,22 @@ Graph::Graph (size_type num_nodes):partition(Partition(num_nodes))
 
 
 
-Graph::size_type Graph::get_num_nodes ()
+size_type Graph::get_num_nodes ()
 {
    return _nodes.size();
 }
 
-Graph::size_type Graph::get_num_edges ()
+size_type Graph::get_num_edges ()
 {
    return _num_edges;
 }
 
-Graph::size_type Graph::get_num_tree_edges ()
+/*size_type Graph::get_num_tree_edges ()
 {
    return _num_tree_edges;
-}
+}*/
 
-Graph::size_type Graph::get_num_match_edges ()
+size_type Graph::get_num_match_edges ()
 {
    return _num_match_edges;
 }
@@ -54,7 +53,7 @@ Node & Graph::get_node_from_id (NodeId id)
 
 void Graph::add_edge (NodeId node1_id, NodeId node2_id)
 {
-   xcp_check(node1_id != node2_id, "ED::Graph class does not support loops!");
+   xcp_check(node1_id != node2_id, "Graph class does not support loops!");
 
    Node & node1 = _nodes[node1_id];
    node1.add_neighbor(node2_id);
@@ -91,8 +90,6 @@ void Graph::add_tree_edge (NodeId node1_id, NodeId node2_id)
 	} else if (node1.is_even()){
 		node2.set_odd(true);
 	}
-
-	return;
 }
 
 
@@ -101,17 +98,17 @@ void Graph::add_match_edge (NodeId node1_id, NodeId node2_id)
    
    Node & node1 = _nodes[node1_id];
    Node & node2 = _nodes[node2_id];
-	xcp_check(node1_id.is_matched()==false and node2_id.is_matched()==false, "adding an edge to the matching must fulfull both nodes not being matched already");
+	xcp_check(node1.is_matched()==false and node2.is_matched()==false, "adding an edge to the matching must fulfill both nodes not being matched already");
 
    node1.add_match_neighbor(node2_id);
    node2.add_match_neighbor(node1_id);
+   node1.set_is_matched(true);
+   node2.set_is_matched(true);
 
-   _num__match_edges += 1;
+   _num_match_edges += 1;
 
    std::pair<NodeId, NodeId> edge = {node1_id, node2_id};
    _match_edges.push_back(edge);
-
-	return;
 }
 
 
@@ -136,8 +133,6 @@ void Graph::remove_tree_edge (NodeId node1_id, NodeId node2_id)
 		node2.set_even(false);
 		node2.set_odd(false);
 	}
-
-	return;
 }
 
 
@@ -155,16 +150,14 @@ void Graph::remove_match_edge (NodeId node1_id, NodeId node2_id)
 
 	if(std::find(_match_edges.begin(), _match_edges.end(), edge12) != _match_edges.end()){
 		_match_edges.erase (std::find(_match_edges.begin(),_match_edges.end(), edge12));
-	} else (std::find(_match_edges.begin(), _match_edges.end(), edge21) != _match_edges.end()){
+	} else if (std::find(_match_edges.begin(), _match_edges.end(), edge21) != _match_edges.end()){
 		_match_edges.erase (std::find(_match_edges.begin(), _match_edges.end(), edge21));
 	}
 
-	_num_match_edges-=1;
+	_num_match_edges -= 1;
 
 	node1.set_is_matched(false);
 	node2.set_is_matched(false);
-
-	return;
 }
 
 bool Graph::contains_match_edge (NodeId node1_id, NodeId node2_id){
@@ -194,18 +187,17 @@ int Graph::odd_even (NodeId node1_id)
 
 bool Graph::init_tree ()
 {
-	_tree_paths = {};
 	bool found_root=false;
 	for(NodeId i = 0; i < _nodes.size(); ++i) {
-		_nodes[i].set_even(true);
-		_nodes[i].set_odd(true);
-		if (not _nodes[i].is_matched()){
-			if (not found_root){
-				_root=i;
-				found_root = true;
-				_nodes[i].set_even(true);
-			}
-		}
+		_nodes[i].set_even(false);
+		_nodes[i].set_odd(false);
+        if (not found_root) {
+            if (not _nodes[i].is_matched()) {
+                _root = i;
+                found_root = true;
+                _nodes[i].set_even(true);
+            }
+        }
 
 	}
 	return found_root;
@@ -220,11 +212,14 @@ void Graph::combine(NodeId node1_id, NodeId node2_id, int evenodd){
 	} else if (evenodd==1){
 		_nodes[node1_id].set_even(true);
 		_nodes[node2_id].set_even(true);
-	} else {
+	} else {    ///passiert nicht
+	/*
 		_nodes[node1_id].set_even(false);
 		_nodes[node2_id].set_even(false);
 		_nodes[node1_id].set_odd(false);
 		_nodes[node2_id].set_odd(false);
+	 */
+	std::cout << "Trying to shrink a node not in the tree!\n";
 
 	}
 }
@@ -234,4 +229,29 @@ void Graph::combine(NodeId node1_id, NodeId node2_id, int evenodd){
 bool Graph::check_combined(NodeId node1_id, NodeId node2_id)
 {
 	return _partition.check_combined(node1_id, node2_id);
+}
+
+auto Graph::get_nodes() -> std::vector<Node>&{
+    return _nodes;
+}
+auto Graph::get_matching() -> std::vector<std::pair<NodeId, NodeId>>&{
+    return _match_edges;
+}
+
+Partition<NodeId>& Graph::partition(){
+    return _partition;
+}
+
+std::vector<std::pair<NodeId, NodeId>> Graph::get_tree_path(NodeId x){
+    return _tree_paths[x];
+}
+
+void Graph::print_matching()
+{
+    std::cout << "\n";
+    std::cout << "p edge " << get_num_nodes() << " " << get_num_match_edges() << "\n";
+    for (auto me : _match_edges){
+        std::cout << "e " << me.first+1 << " " << me.second+1 << "\n";
+    }
+    std::cout << "\n";
 }

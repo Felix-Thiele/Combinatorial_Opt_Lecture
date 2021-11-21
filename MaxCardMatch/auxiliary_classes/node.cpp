@@ -1,17 +1,17 @@
-#include "node.hpp"
+#include "node.h"
 
 
-Node::size_type Node::degree ()
+size_type Node::degree ()
 {
    return _neighbors.size();
 }
 
-Node::size_type Node::tree_degree ()
+size_type Node::tree_degree ()
 {
    return _tree_neighbors.size();
 }
 
-Node::size_type Node::matching_degree ()
+size_type Node::matching_degree ()
 {
    return _match_neighbors.size();
 }
@@ -80,20 +80,24 @@ bool Node::is_odd(){
 	return _is_odd;
 }
 
+bool Node::is_in_tree(){
+    return (is_odd() or is_even());
+}
 
 void Node::set_is_matched(bool to){
 	_is_matched = to;
-	return;
 }
 
 void Node::set_even(bool to){
 	_is_even = to;
-	_is_odd = not to;
-	return;
+	if(_is_odd and to){
+        _is_odd = false;
+	}
 }
 
 void Node::set_odd(bool to){
 	_is_odd = to;
-	_is_even = not to;
-	return;
+    if(_is_even and to){
+        _is_even = false;
+    }
 }

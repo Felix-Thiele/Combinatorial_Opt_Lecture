@@ -4,10 +4,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "graph_class/graph.hpp"
-
-using ED::Graph;
+#include "auxiliary_classes/graph.h"
 
 Graph read_file();
+
+Graph read_graph();
 
 #endif

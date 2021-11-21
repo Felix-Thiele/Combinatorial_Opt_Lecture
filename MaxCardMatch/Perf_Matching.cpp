@@ -1,106 +1,103 @@
 #include "Perf_Matching.h"
 
 
-void find_edge(Graph Graph, NodeId *node_x, NodeId *node_y, bool found){
-	for(NodeId even_node = 0; i < _nodes.size(); ++even_node) {
-		if _nodes.even_node.is_even(){
-			for (auto neighbor: Graph._nodes[even_node].neighbors()){
-				if (not Graph.check_combined(even_node,neighbor) and not Graph._nodes[neighbor].is_odd()){
+bool find_edge(Graph& graph, NodeId& node_x, NodeId& node_y){
+	for(NodeId even_node = 0; even_node < graph.get_num_nodes(); ++even_node) {
+		if (graph.get_node_from_id(even_node).is_even()){
+			for (auto neighbor: graph.get_node_from_id(even_node).get_neighbors()){
+				if (not graph.check_combined(even_node,neighbor) and not graph.get_node_from_id(neighbor).is_odd()){
 					node_x = even_node;
 					node_y = neighbor;
-					found = true;
-					return;
+					return true;
 				}
 			}
 		}
 	}
-	found=false;
-	return;
+	return false;
 }
 
 
-void perfect_matching(ED::Graph Graph) {
-	// this calculates a perfect matching if it exists
+int find_split(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2){
+    if(path1.empty() or path2.empty()){
+        return 0;
+    }
+    int i = 0;
+    while (path1[i].second == path2[i].second){
+        i++;
+    }
+    return i;
+}
 
-	bool found = true;
-	NodeId x;
-	NodeId y;
+void perfect_matching(Graph& graph) {   // this calculates a perfect matching if it exists
+
+	NodeId x = 0;
+	NodeId y = 0;
+
+	while (find_edge(graph, x, y)){
+        std::cout << "Found the edge " << x << " " << y << "\n";
+		Node& node_x = graph.get_node_from_id(x);
+		Node& node_y = graph.get_node_from_id(y);
 
 
-	while (found){
-
-		find_edge(Graph, x, y, found);
-
-		if (not found){
-			// has no matching
-			return;
-		}
-
-
-		Node node_x = Graph._nodes[x];
-		Node node_y = Graph._nodes[y];
-
-
-		if (not node_y.is_matched() and not node_y.is_tree()){
+		if (not node_y.is_matched() and not node_y.is_in_tree()){
 			//augment
-			Graph.add_match_edge(x,y);
+            graph.add_match_edge(x,y);
 			bool parity_count = true;
-			for (auto tree_edge:Graph.tree_paths[x]){
+			for (auto tree_edge : graph.get_tree_path(x)){
   				if (parity_count){
-  					Graph.add_match_edge(tree_edge[0], tree_edge[1]);
+                    graph.add_match_edge(tree_edge.first, tree_edge.second);
   				} else {
-  					Graph.remove_match_edge(tree_edge[0], tree_edge[1]);
+                    graph.remove_match_edge(tree_edge.first, tree_edge.second);
   				}
+  				parity_count = not parity_count;
 			}
-
-			if (2*Graph.get_num_match_edges() == num_nodes){
-				//found matching
+            ///hier müssen wir erst einmal unshrinken, danach schauen, ob es perfekt ist
+			if (2 * graph.get_num_match_edges() == graph.get_num_nodes()){
+				//found perfect matching
+				std::cout << "We found a p.m.!" << std::endl;
 				return;
 			} else {
-				Graph.init_tree();
-			};
+                graph.init_tree();
+			}
 
 
 
-		}else if (not node_y.is_tree() and node_y.is_matched()){
+		}else if (not node_y.is_in_tree() and node_y.is_matched()){
 			//extend
-			Graph.add_tree_edge(x, y);
-
-
-
+            graph.add_tree_edge(x, y);
 
 		} else {
 			//shrink
-			int counter = -1; // counter is the last same vertex in the paths from r to x and r to y
-			std::vector<std::pair<NodeId, NodeId>> path1 = Graph.tree_paths[x];
-			std::vector<std::pair<NodeId, NodeId>> path2 = Graph.tree_paths[y];
-			while (path1[counter+1]==path2[counter+1]){
-				counter++;
-			}
+			std::vector<std::pair<NodeId, NodeId>> path1 = graph.get_tree_path(x);
+			std::vector<std::pair<NodeId, NodeId>> path2 = graph.get_tree_path(y);
 
-			for (int i = counter; i < path1.size(); ++i){
-				Graph.remove_tree_edge(path1[i][0], path1[i][1]);
+
+			int last_shared_nodeid = find_split(path1, path2);
+
+			for (int i = last_shared_nodeid; i < path1.size(); ++i){
+                graph.remove_tree_edge(path1[i].first, path1[i].second);
 				int parity;
-				if (Graph._nodes[path1[i][0]].is_odd()){
+				if (graph.get_node_from_id(path1[i].first).is_odd()){
 					parity = 0;
-				} else if (Graph._nodes[path1[i][0]].is_even()){
+				} else if (graph.get_node_from_id(path1[i].first).is_even()){
 					parity = 1;
 				} else{
 					parity = 2;
 				}
-				Graph.partition.combine(path1[i][0], path1[i][1], parity);
+                graph.combine(path1[i].first, path1[i].second, parity);
 			}
-			for (int i = counter; i < path2.size(); ++i){
-				Graph.remove_tree_edge(path2[i][0], path2[i][1]);
+			for (int i = last_shared_nodeid; i < path2.size(); ++i){
+                graph.remove_tree_edge(path2[i].first, path2[i].second);
 				int parity;
-				if (Graph._nodes[path2[i][0]].is_odd()){
+				if (graph.get_node_from_id(path2[i].first).is_odd()){
 					parity = 0;
-				} else if (Graph._nodes[path2[i][0]].is_even()){
+				} else if (graph.get_node_from_id(path2[i].first).is_even()){
 					parity = 1;
 				} else{
-					parity = 2;
+				    std::cout << "Some node of the circuit is not in the tree!\n";
+					//parity = 2;
 				}
-				Graph.partition.combine(path2[i][0], path2[i][1], parity);
+				graph.combine(path2[i].first, path2[i].second, parity);
 			}
 		}
 	}

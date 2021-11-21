@@ -1,4 +1,5 @@
 #include "input.h"
+#include <sstream>
 
 
 std::vector<std::string> split(std::string str){
@@ -20,16 +21,15 @@ std::vector<std::string> split(std::string str){
 }
 
 
-ED::Graph read_file() {
+Graph read_file() {
 	//this reads the input file and returns the corresponding graph
-	ED::Graph G = ED::Graph(0);
-	std::ifstream file("input.txt");
-	
+	Graph G = Graph(0);
+	std::ifstream file("C:\\Users\\maxmu\\CLionProjects\\untitled1\\input.txt");
 	if (file.is_open()) {
 		std::string line;
 		std::getline(file, line);
 		// the third index of the first line gives the number of nodes in our graph.
-		G = ED::Graph(std::stoi(split(line.c_str()).at(2)));
+		G = Graph(std::stoi(split(line.c_str()).at(2)));
 
 		while (std::getline(file, line)) {
 			std::vector<std::string> split_line = split(line.c_str());
@@ -40,4 +40,38 @@ ED::Graph read_file() {
 		file.close();
 	}
 	return G;
+}
+
+Graph read_graph(){
+    std::ifstream file("C:\\Users\\maxmu\\CLionProjects\\untitled1\\input.txt");
+    std::string line;
+    std::getline(file, line);
+    line.erase(line.begin(), line.begin()+7);
+    std::cout << line << "\n";
+    std::stringstream ss(line);
+    ///lets assume the first line will have correct format
+    unsigned n, m;
+    ss >> n;
+    ss >> m;
+    std::cout << n << m;
+    Graph g(n);
+    while(std::getline(file, line)){
+        std::cout << line << "\n";
+        std::stringstream sss(line);
+        unsigned a, b;
+        char x;
+        sss >> x;
+        if(x == 'c'){ continue; }
+        else if (x == 'e'){
+            sss >> a;
+            sss >> b;
+            g.add_edge(a-1,b-1);
+            std::cout << a << b;
+        }
+    }
+    file.clear();
+    file.seekg(0);
+    file.close();
+    return g;
+
 }

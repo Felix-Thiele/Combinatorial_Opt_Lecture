@@ -1,13 +1,21 @@
 #include "input.h"
-#include <vector>
+#include "Perf_Matching.h"
 #include <iostream>
 
 
 int main() {
-	Graph G = read_file();
-	std::cout << G.num_nodes();
-	std::cout << G.num_edges();
-	std::cout << G.node(0).degree();
-	std::cout << G.root;
-	std::cout << " Hello";
+    try {
+        Graph G = read_graph();
+        std::cout << G.get_num_nodes() << "\n";
+        std::cout << G.get_num_edges() << "\n";
+        std::cout << G.get_node_from_id(0).degree() << "\n";
+        std::cout << " Hello\n";
+
+        perfect_matching(G);
+
+        G.print_matching();
+    }
+    catch(std::string& msg){
+        std::cout << msg;
+    }
 }
