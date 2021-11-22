@@ -17,6 +17,56 @@ bool find_edge(Graph& graph, NodeId& node_x, NodeId& node_y){
 }
 
 
+void unshrink(Graph& graph){
+	while (graph.has_circle()){
+		std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> circ = graph.last_added_circle();
+		
+		NodeId outNode;
+		std::vector<NodeId> circ_nodes;
+
+		for (auto nodepair : circ[0]){
+			circ_nodes.push_back(nodepair[0]);
+			circ_nodes.push_back(nodepair[1]);
+		}
+		for (auto nodepair : circ[1]){
+			circ_nodes.push_back(nodepair[0]);
+			circ_nodes.push_back(nodepair[1]);
+		}
+		circ_nodes.push_back(circ[2][0]);
+		circ_nodes.push_back(circ[2][1]);
+
+		for (auto node : circ_nodes){
+			 for (neighbor : graph.get_node_from_id(node).get_match_neighbors()){
+			 	if(not std::find(circ_nodes.begin(), circ_nodes.end(), neighbor) != circ_nodes.end()){
+			 		outNode = node;
+			 	}
+			 }
+		}
+
+		int found_node = 0; // go through the circle edges twice and after having found the out node add or remove the edge from the matching . Variable is 0 until found and the switch between 1 and 2 counting the parity
+		full_path = path1;
+		full_path.push_back(edge);
+		full_path.insert(full_path.end(), path2.rbegin(), path2.rend()); // funktioniert der reverse iterator... ist das generell hubsch wie ich das gemacht habe?
+		full_path.insert(full_path.end(), full_path.begin(), full_path.end()); // klappt das?
+		for (auto edge : full_path){
+			if (found_node == 0){
+				if (edge[0]==outNode or edge[1]==outNode){
+					found_node = 1;
+				} else {
+					if (found_node == 1){ // dont add edge to matching
+						graph.add_match_edge(edge);
+						found_node = 2;
+					} else { //found_node ==2, add edge to matching
+						found_node = 1;
+						graph.remove_match_edge(edge);
+					}
+				}
+			}
+		}
+	}
+}
+
+
 int find_split(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2){
     if(path1.empty() or path2.empty()){
         return 0;
@@ -28,7 +78,7 @@ int find_split(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::p
     return i;
 }
 
-void perfect_matching(Graph& graph) {   // this calculates a perfect matching if it exists
+bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if it exists
 
 	NodeId x = 0;
 	NodeId y = 0;
@@ -55,7 +105,7 @@ void perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 			if (2 * graph.get_num_match_edges() == graph.get_num_nodes()){
 				//found perfect matching
 				std::cout << "We found a p.m.!" << std::endl;
-				return;
+				return true;
 			} else {
                 graph.init_tree();
 			}
@@ -73,6 +123,8 @@ void perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 
 
 			int last_shared_nodeid = find_split(path1, path2);
+			std::pair<NodeId, NodeId> con_edge = {x,y};
+			graph.add_circle(path1, path2, con_edge);
 
 			for (int i = last_shared_nodeid; i < path1.size(); ++i){
                 graph.remove_tree_edge(path1[i].first, path1[i].second);
@@ -99,6 +151,20 @@ void perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 				}
 				graph.combine(path2[i].first, path2[i].second, parity);
 			}
+		}
+	}
+	return false;
+}
+
+void matching(Graph& graph){ // was genau macht das &? brauch ich ein * in perf_mathcing damit die graph instance auch veraewndert wird?
+	bool not_done = true;
+	while(not_done){
+		perfect_matching(graph);
+		for(NodeId id = 0; id < _nodes.size(); ++id) {
+			if (graph.get_node_from_id(id).is_in_tree()){
+				//add to deleted node :: todo implement deleted nodes and in all functions only return node if not deleted.... FUCKFUCKFUCK egal morgen ;D
+			}
+			// und matching und tree edges resetten....
 		}
 	}
 }

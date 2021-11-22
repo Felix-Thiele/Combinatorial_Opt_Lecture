@@ -14,7 +14,7 @@ m.o: i.o g.o  n.o pa.o p.o
 	$(CC) $(CFLAGS) -c main.cpp -o m.o
 
 p.o: g.o n.o pa.o
-	$(CC) $(CFLAGS) -c Perf_Matching.cpp -o g.o
+	$(CC) $(CFLAGS) -c Matching.cpp -o g.o
 
 i.o: g.o n.o pa.o
 	$(CC) $(CFLAGS) -c input.cpp -o i.o

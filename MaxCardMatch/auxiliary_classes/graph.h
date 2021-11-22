@@ -35,6 +35,10 @@ public:
    void add_tree_edge (NodeId node1_id, NodeId node2_id);
    void add_match_edge (NodeId node1_id, NodeId node2_id);
 
+   void add_circle (std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>);
+   std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> last_added_circle ();
+   bool has_circle();
+
    void remove_tree_edge (NodeId node1_id, NodeId node2_id);
    void remove_match_edge (NodeId node1_id, NodeId node2_id);
 
@@ -62,6 +66,7 @@ private:
    size_type _num_edges = 0;
 
    size_type _num_non_deleted_nodes;
+   std::vector<NodeId> _deleted_nodes;
 
    Partition<NodeId> _partition;
 
@@ -71,6 +76,8 @@ private:
    std::vector<std::pair<NodeId, NodeId>> _match_edges;
    size_type _num_match_edges = 0;
 
+   // _circles saves circles by saving an edge and two vectors of edges form each vertex in the edge to a ancestor in the tree
+   std::vector<std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>>> _circles;
 }; // class Graph
 
 

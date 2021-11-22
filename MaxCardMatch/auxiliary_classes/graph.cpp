@@ -112,6 +112,25 @@ void Graph::add_match_edge (NodeId node1_id, NodeId node2_id)
 }
 
 
+void Graph::add_circle (std::vector<std::pair<NodeId, NodeId>NodeId> path1, std::vector<std::pair<NodeId, NodeId>> path2, , std::pair<NodeId, NodeId> edge){
+	std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> circ = {path1, path2, edge};
+	_circles.push_back(circ);
+}
+
+std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> Graph::last_added_circle (){
+	std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> val = _circles.back();
+	_circles.pop_back();
+	return val;
+}
+
+bool Graph::has_circle(){
+	if (_circles.size()>0){
+		return true;
+	}
+	retrun false;
+}
+
+
 void Graph::remove_tree_edge (NodeId node1_id, NodeId node2_id)
 {
 	Node & node1 = _nodes[node1_id];
