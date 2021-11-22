@@ -43,7 +43,7 @@ void unshrink(Graph& graph){
 			 }
 		}
 
-		int found_node = 0; // go through the circle edges twice and after having found the out node add or remove the edge from the matching . Variable is 0 until found and the switch between 1 and 2 counting the parity
+		int found_node = 0; // go through the circle edges twice and after having found the out node add or remove the next edges from the matching . Variable is 0 until found and the switch between 1 and 2 counting the parity, until we find the node again. then it is 3 and we are done
 		full_path = path1;
 		full_path.push_back(edge);
 		full_path.insert(full_path.end(), path2.rbegin(), path2.rend()); // funktioniert der reverse iterator... ist das generell hubsch wie ich das gemacht habe?
@@ -60,6 +60,8 @@ void unshrink(Graph& graph){
 						found_node = 1;
 						graph.remove_match_edge(edge);
 					}
+					if (edge[0]==outNode or edge[1]==outNode){
+						found_node = 3;
 				}
 			}
 		}
