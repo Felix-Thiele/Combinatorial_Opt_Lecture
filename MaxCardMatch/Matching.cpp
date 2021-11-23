@@ -1,4 +1,4 @@
-#include "Perf_Matching.h"
+#include "Matching.h"
 
 
 bool find_edge(Graph& graph, NodeId& node_x, NodeId& node_y){
@@ -17,113 +17,67 @@ bool find_edge(Graph& graph, NodeId& node_x, NodeId& node_y){
 }
 
 
+
 void unshrink(Graph& graph){
-    while(graph.has_circle()){
-        auto [cycle_vec, cycle_edges_vec] = graph.get_last_cycle();
-        ///first we find the outside neighbor
-        NodeId outside_neighbor = graph.get_num_nodes()+1;    ///for debugging
-        NodeId matched_to_outside_id = graph.get_num_nodes()+1;    ///for debugging
-        for(auto node_id : cycle_vec){
-            NodeId neighbor = graph.get_node_from_id(node_id).get_match_neighbors()[0];
-            xcp_check(graph.get_node_from_id(node_id).get_match_neighbors().size() == 1);
-            bool is_outside = true;
-            for(auto node2_id : cycle_vec){
-                if( neighbor == node2_id){
-                    is_outside = false;
-                    break;
-                }
-            }
-            if(is_outside and not(graph.partition().check_combined(neighbor, node_id))){
-                outside_neighbor = neighbor;
-                matched_to_outside_id = node_id;
-                break;
-            }
-        }
-        if(outside_neighbor == graph.get_num_nodes()+1){
-            std::cout << "Haven't found the outside neighbor!!!\n";
-        }
-        int matched_to_outside_index = 0;
-        for(int i = 0; i < cycle_vec.size(); i++){
-            if(cycle_vec[i] == matched_to_outside_id){
-                matched_to_outside_index = i;
-                break;
-            }
-        }
-        int matched_to_outside_edge = 0;
-        for(int i = 0; i < cycle_edges_vecvec.size(); i++){
-            if(cycle_edges_vec[i].first == matched_to_outside_id){
-                matched_to_outside_edge = i;
-                break;
-            }
-        }
-        ///now we adjust the matching; traverse the cycle once, add and remove edges from M alternatingly
-        int size_edges = cycle_edges_vec.size();
-        for(int j = 0; j < size_edges; j++){
-            if(not j%2){
-                graph.remove_match_edge(cycle_edges_vec[(j+matched_to_outside_edge)%size_edges].first,
-                                        cycle_edges_vec[(j+matched_to_outside_edge)%size_edges].second);
-            } else{
-                graph.add_match_edge(cycle_edges_vec[(j+matched_to_outside_edge)%size_edges].first,
-                                     cycle_edges_vec[(j+matched_to_outside_edge)%size_edges].second);
-            }
-        }
-    }
+    std::cout << "was here" << "\n";
+	while (graph.has_cycle()){
 
-}
-/*
-void unshrink(Graph& graph){
-	while (graph.has_circle()){
-		NodeId outNode_id;
-		std::vector<NodeId> circ_nodes;
-		auto [circ_0, circ_1, circ_2] = graph.last_added_circle();
+    	std::cout << "unshrink" << "\n";
+        std::pair< std::vector<NodeId>, std::vector<std::pair<NodeId, NodeId>>> cyc_pair = graph.get_last_cycle();
+        std::vector<NodeId> cycle_nodes = cyc_pair.first;
+        std::vector<std::pair<NodeId, NodeId>> cycle_edges = cyc_pair.second;
 
-		for (auto nodepair : circ_0){
-			circ_nodes.push_back(nodepair.first);
-			circ_nodes.push_back(nodepair.second);
-		}
-		for (auto nodepair : circ_1){
-			circ_nodes.push_back(nodepair.first);
-			circ_nodes.push_back(nodepair.second);
-		}
-		circ_nodes.push_back(circ_2.first);
-		circ_nodes.push_back(circ_2.second);
 
-		for (auto node : circ_nodes){
-			 for (neighbor : graph.get_node_from_id(node).get_match_neighbors()){
-			 	if(not std::find(circ_nodes.begin(), circ_nodes.end(), neighbor) != circ_nodes.end()){
-                    outNode_id = node;
+		NodeId matched_to_outside_id; // the node in the cycle matched to an outside node
+
+		// find the node in the cycle that has a matching neighbor that is not in th circle. Note that some nodes are partitioned together:
+		for (auto node : cycle_nodes){
+			 for (auto neighbor : graph.get_node_from_id(node).get_match_neighbors()){
+			 	bool is_outside = true;
+			 	for (auto cycle_node : cycle_nodes){
+			 		if (graph.check_combined(cycle_node, neighbor)){
+			 			is_outside=false;
+			 		}
 			 	}
+
+	            if(is_outside){
+	                matched_to_outside_id = node;
+	                break;
+	            }
 			 }
 		}
+
 
 		int found_node = 0; // go through the circle edges twice
 		// after having found the out node add or remove the next edges from the matching.
 		// Variable is 0 until found and the switch between 1 and 2 counting the parity, until we find the node again.
 		// then it is 3 and we are done.
-		full_path = path1;
-		full_path.push_back(edge);
-		full_path.insert(full_path.end(), path2.rbegin(), path2.rend()); // funktioniert der reverse iterator... ist das generell hubsch wie ich das gemacht habe?
-		full_path.insert(full_path.end(), full_path.begin(), full_path.end()); // klappt das?
-		for (auto edge : full_path){
-			if (found_node == 0){
-				if (edge[0]==outNode_id or edge[1]==outNode_id){
-					found_node = 1;
-				} else {
-					if (found_node == 1){ // dont add edge to matching
-						graph.add_match_edge(edge);
-						found_node = 2;
-					} else { //found_node ==2, add edge to matching
+
+		auto iterate_edges = [&](){
+			for (auto edge : cycle_edges){
+				if (found_node == 0){
+					if (edge.first==matched_to_outside_id or edge.second==matched_to_outside_id){
 						found_node = 1;
-						graph.remove_match_edge(edge);
+					} else {
+						if (found_node == 1){ // dont add edge to matching
+							graph.add_match_edge(edge.first, edge.second);
+							found_node = 2;
+						} else { //found_node ==2, add edge to matching
+							found_node = 1;
+							graph.remove_match_edge(edge.first, edge.second);
+						}
+						if (edge.first==matched_to_outside_id or edge.second==matched_to_outside_id){
+							found_node = 3;
+						}
 					}
-					if (edge[0]==outNode_id or edge[1]==outNode_id){
-						found_node = 3;
 				}
 			}
-		}
+			return;
+		};
+		iterate_edges();
+		iterate_edges();	
 	}
 }
-*/
 
 int find_split(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2){
     if(path1.empty() or path2.empty()){
@@ -143,11 +97,8 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 
 	while (find_edge(graph, x, y)){
         std::cout << "Found the edge " << x << " " << y << "\n";
-		Node& node_x = graph.get_node_from_id(x);
-		Node& node_y = graph.get_node_from_id(y);
 
-
-		if (not node_y.is_matched() and not node_y.is_in_tree()){
+		if (not graph.get_node_from_id(y).is_matched() and not graph.get_node_from_id(y).is_in_tree()){
 			//augment
             graph.add_match_edge(x,y);
 			bool parity_count = true;
@@ -162,6 +113,7 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
             ///hier müssen wir erst einmal unshrinken, danach schauen, ob es perfekt ist
 			if (2 * graph.get_num_match_edges() == graph.get_num_nodes()){
 				//found perfect matching
+				unshrink(graph);
 				std::cout << "We found a p.m.!" << std::endl;
 				return true;
 			} else {
@@ -170,7 +122,7 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 
 
 
-		}else if (not node_y.is_in_tree() and node_y.is_matched()){
+		}else if (not graph.get_node_from_id(y).is_in_tree() and graph.get_node_from_id(y).is_matched()){
 			//extend
             graph.add_tree_edge(x, y);
 
@@ -180,11 +132,11 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 			std::vector<std::pair<NodeId, NodeId>> path2 = graph.get_tree_path(y);
 
 
-			int last_shared_nodeid = find_split(path1, path2);
+			NodeId last_shared_nodeid = find_split(path1, path2);
 			std::pair<NodeId, NodeId> con_edge = {x,y};
-			graph.add_circle(path1, path2, con_edge);
+			graph.add_cycle(path1, path2, con_edge, last_shared_nodeid);
 
-			for (int i = last_shared_nodeid; i < path1.size(); ++i){
+			for (NodeId i = last_shared_nodeid; i < path1.size(); ++i){
                 graph.remove_tree_edge(path1[i].first, path1[i].second);
 				int parity;
 				if (graph.get_node_from_id(path1[i].first).is_odd()){
@@ -196,7 +148,7 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 				}
                 graph.combine(path1[i].first, path1[i].second, parity);
 			}
-			for (int i = last_shared_nodeid; i < path2.size(); ++i){
+			for (NodeId i = last_shared_nodeid; i < path2.size(); ++i){
                 graph.remove_tree_edge(path2[i].first, path2[i].second);
 				int parity;
 				if (graph.get_node_from_id(path2[i].first).is_odd()){
@@ -213,7 +165,7 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 	}
 	return false;
 }
-
+/*
 void matching(Graph& graph){ // was genau macht das &? brauch ich ein * in perf_mathcing damit die graph instance auch veraewndert wird?
 	bool not_done = true;
 	while(not_done){
@@ -225,4 +177,4 @@ void matching(Graph& graph){ // was genau macht das &? brauch ich ein * in perf_
 			// und matching und tree edges resetten....
 		}
 	}
-}
+}*/

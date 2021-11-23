@@ -40,8 +40,8 @@ public:
    bool has_circle();
 
    bool has_cycle();
-   void add_cycle(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2, int last_common_index);
-   std::pair< std::vector<NodeId>, std::vector<std::pair<NodeId, NodeId>> > get_last_cycle();
+   void add_cycle(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2, std::pair<NodeId, NodeId>, NodeId last_common_index);
+   std::pair< std::vector<NodeId>, std::vector<std::pair<NodeId, NodeId>>> get_last_cycle();
 
    void remove_tree_edge (NodeId node1_id, NodeId node2_id);
    void remove_match_edge (NodeId node1_id, NodeId node2_id);

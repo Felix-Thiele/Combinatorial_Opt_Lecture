@@ -36,7 +36,7 @@ Partition<T>::Partition(std::vector<T> element_vec){
 template <typename T>
 Partition<T>::Partition(T num_nodes) {
     std::vector<T> element_vec(num_nodes);
-    for(int i = 0; i < num_nodes; i++){
+    for(T i = 0; i < num_nodes; i++){
         element_vec[i] = i;
     }
     for (auto element:element_vec) {

@@ -43,7 +43,7 @@ Graph read_file() {
 }
 
 Graph read_graph(){
-    std::ifstream file("C:\\Users\\maxmu\\CLionProjects\\untitled1\\input.txt");
+    std::ifstream file("D:\\C++Projects\\CompOpt\\MaxCardMatch\\instances\\pbd984.dmx");
     std::string line;
     std::getline(file, line);
     line.erase(line.begin(), line.begin()+7);

@@ -8,6 +8,6 @@
 
 void find_edge(Graph& graph, NodeId& node_x, NodeId& node_y, bool found);
 
-void perfect_matching(Graph& graph);
+bool perfect_matching(Graph& graph);
 
 #endif
