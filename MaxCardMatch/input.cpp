@@ -43,20 +43,20 @@ Graph read_file() {
 }
 
 Graph read_graph(){
-    std::ifstream file("D:\\C++Projects\\CompOpt\\MaxCardMatch\\instances\\pbd984.dmx");
+    std::ifstream file("D:\\C++Projects\\CompOpt\\MaxCardMatch\\instances\\lu980.dmx");
     std::string line;
     std::getline(file, line);
     line.erase(line.begin(), line.begin()+7);
-    std::cout << line << "\n";
+    //std::cout << line << "\n";
     std::stringstream ss(line);
     ///lets assume the first line will have correct format
     unsigned n, m;
     ss >> n;
     ss >> m;
-    std::cout << n << m;
+    //std::cout << n << m;
     Graph g(n);
     while(std::getline(file, line)){
-        std::cout << line << "\n";
+        //std::cout << line << "\n";
         std::stringstream sss(line);
         unsigned a, b;
         char x;
@@ -66,7 +66,7 @@ Graph read_graph(){
             sss >> a;
             sss >> b;
             g.add_edge(a-1,b-1);
-            std::cout << a << b;
+            //std::cout << a << b;
         }
     }
     file.clear();

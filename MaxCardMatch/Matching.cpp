@@ -96,7 +96,7 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 	NodeId y = 0;
 
 	while (find_edge(graph, x, y)){
-        std::cout << "Found the edge " << x << " " << y << "\n";
+        //std::cout << "Found the edge " << x << " " << y << "\n";
 
 		if (not graph.get_node_from_id(y).is_matched() and not graph.get_node_from_id(y).is_in_tree()){
 			//augment
@@ -110,10 +110,10 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
   				}
   				parity_count = not parity_count;
 			}
+			unshrink(graph);
             ///hier müssen wir erst einmal unshrinken, danach schauen, ob es perfekt ist
 			if (2 * graph.get_num_match_edges() == graph.get_num_nodes()){
 				//found perfect matching
-				unshrink(graph);
 				std::cout << "We found a p.m.!" << std::endl;
 				return true;
 			} else {
