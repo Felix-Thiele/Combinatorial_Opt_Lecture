@@ -37,6 +37,7 @@ public:
    void remove_neighbor (NodeId id);
    void remove_tree_neighbor (NodeId id);
    void remove_match_neighbor (NodeId id);
+   void remove_all_tree_neighbors ();
 
    bool is_matched();
    bool is_in_tree();

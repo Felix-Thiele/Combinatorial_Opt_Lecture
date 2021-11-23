@@ -216,7 +216,9 @@ int Graph::odd_even (NodeId node1_id)
 bool Graph::init_tree ()
 {
 	bool found_root=false;
+	_tree_paths = {};
 	for(NodeId i = 0; i < _nodes.size(); ++i) {
+		get_node_from_id(i).remove_all_tree_neighbors();
 		_nodes[i].set_even(false);
 		_nodes[i].set_odd(false);
         if (not found_root) {

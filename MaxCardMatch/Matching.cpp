@@ -134,31 +134,26 @@ bool perfect_matching(Graph& graph) {   // this calculates a perfect matching if
 
 			NodeId last_shared_nodeid = find_split(path1, path2);
 			std::pair<NodeId, NodeId> con_edge = {x,y};
+			std::cout << "added cycles";
 			graph.add_cycle(path1, path2, con_edge, last_shared_nodeid);
 
-			for (NodeId i = last_shared_nodeid; i < path1.size(); ++i){
-                graph.remove_tree_edge(path1[i].first, path1[i].second);
-				int parity;
-				if (graph.get_node_from_id(path1[i].first).is_odd()){
+			int parity;
+			if (graph.get_node_from_id(path1[last_shared_nodeid].first).is_odd()){
 					parity = 0;
-				} else if (graph.get_node_from_id(path1[i].first).is_even()){
+				} else if (graph.get_node_from_id(path1[last_shared_nodeid].first).is_even()){
 					parity = 1;
 				} else{
 					parity = 2;
-				}
+			}	
+
+			for (NodeId i = last_shared_nodeid; i < path1.size(); ++i){
+                graph.remove_tree_edge(path1[i].first, path1[i].second);
+				
                 graph.combine(path1[i].first, path1[i].second, parity);
 			}
 			for (NodeId i = last_shared_nodeid; i < path2.size(); ++i){
                 graph.remove_tree_edge(path2[i].first, path2[i].second);
-				int parity;
-				if (graph.get_node_from_id(path2[i].first).is_odd()){
-					parity = 0;
-				} else if (graph.get_node_from_id(path2[i].first).is_even()){
-					parity = 1;
-				} else{
-				    std::cout << "Some node of the circuit is not in the tree!\n";
-					//parity = 2;
-				}
+				
 				graph.combine(path2[i].first, path2[i].second, parity);
 			}
 		}

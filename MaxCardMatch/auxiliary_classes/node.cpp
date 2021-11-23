@@ -60,6 +60,10 @@ void Node::remove_tree_neighbor (NodeId id)
 	}
 }
 
+void Node::remove_all_tree_neighbors (){
+	_tree_neighbors = {};
+}
+
 void Node::remove_match_neighbor (NodeId id)
 {
 	if(std::find(_match_neighbors.begin(), _match_neighbors.end(), id) != _match_neighbors.end()){
