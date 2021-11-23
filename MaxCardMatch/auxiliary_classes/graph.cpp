@@ -111,14 +111,14 @@ void Graph::add_match_edge (NodeId node1_id, NodeId node2_id)
    _match_edges.push_back(edge);
 }
 
-
-void Graph::add_circle (std::vector<std::pair<NodeId, NodeId>NodeId> path1, std::vector<std::pair<NodeId, NodeId>> path2, , std::pair<NodeId, NodeId> edge){
+/*
+void Graph::add_circle (std::vector<std::pair<NodeId, NodeId>> path1, std::vector<std::pair<NodeId, NodeId>> path2, std::pair<NodeId, NodeId> edge){
 	std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> circ = {path1, path2, edge};
 	_circles.push_back(circ);
 }
 
-std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> Graph::last_added_circle (){
-	std::pair<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> val = _circles.back();
+std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> Graph::last_added_circle (){
+	std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> val = _circles.back();
 	_circles.pop_back();
 	return val;
 }
@@ -127,7 +127,35 @@ bool Graph::has_circle(){
 	if (_circles.size()>0){
 		return true;
 	}
-	retrun false;
+	return false;
+}*/
+
+bool Graph::has_cycle(){
+    return (not _cycles.empty());
+}
+void Graph::add_cycle(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::pair<NodeId, NodeId>>& path2, int last_common_index){
+    std::vector<NodeId> cycle;
+    std::vector<std::pair<NodeId, NodeId>> cycle_edges;
+    for(int i = last_common_index; i < path1.size(); i++){
+        cycle.push_back(path1[i].first);
+        cycle.push_back(path1[i].second);
+        cycle_edges.push_back(path1[i]);
+    }
+    cycle_edges.push_back(std::make_pair(path1.back().second, path2.back().second));
+    for(int i = path2.size()-1; i >= last_common_index; i--){
+        cycle.push_back(path2[i].second);
+        cycle.push_back(path2[i].first);
+        cycle_edges.push_back(std::make_pair(path2[i].second, path2[i].first));
+    }
+    _cycles.push_back(cycle);
+    _cycle_edges.push_back(cycle_edges);
+}
+
+std::pair< std::vector<NodeId>, std::vector<std::pair<NodeId, NodeId>> > Graph::get_last_cycle(){
+    auto pair = std::make_pair(_cycles.back(), _cycle_edges.back());
+    _cycles.pop_back();
+    _cycle_edges.pop_back();
+    return pair;
 }
 
 
