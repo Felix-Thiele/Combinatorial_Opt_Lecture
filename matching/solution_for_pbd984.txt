@@ -1,5 +1,3 @@
-D:\C++Projects\CompOpt\matching>prog instances/pbd984.dmx
-
 p edge 984 492
 e 935 973
 e 943 977
@@ -493,4 +491,3 @@ e 91 121
 e 93 94
 e 53 92
 e 19 111
-Size of the matching: 492
