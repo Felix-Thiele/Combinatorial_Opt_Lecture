@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <algorithm>
 
+bool debug = false;
+
 
 void xcp_check (bool condition, std::string msg)
 { if (not condition) { throw msg; } }
@@ -68,11 +70,13 @@ bool Graph::is_in_tree(NodeId n){
     }
 }
 bool Graph::has_exposed_node(){
-    std::cout << "EN - Matching: ";
-    for(auto x : _match_edges){
-        std::cout << "("<<x.first << " "<<x.second << ") ";
+    if(debug) {
+        std::cout << "EN - Matching: ";
+        for (auto x : _match_edges) {
+            std::cout << "(" << x.first << " " << x.second << ") ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
     for(int i=0; i < _nodes.size(); i++){
         auto node = _nodes[i];
         if(not node.is_removed() and not is_matched(i)){
@@ -83,11 +87,13 @@ bool Graph::has_exposed_node(){
 }
 
 bool Graph::has_nodes(){
-    std::cout << "HN - Matching: ";
-    for(auto x : _match_edges){
-        std::cout << "("<<x.first << " "<<x.second << ") ";
+    if(debug) {
+        std::cout << "HN - Matching: ";
+        for (auto x : _match_edges) {
+            std::cout << "(" << x.first << " " << x.second << ") ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
     return _removed_count != get_num_nodes();
 }
 
@@ -143,6 +149,21 @@ void Graph::add_match_edge (NodeId node1_id, NodeId node2_id)
    
    Node & node1 = _nodes[node1_id];
    Node & node2 = _nodes[node2_id];
+   if(debug and (node1.is_matched() or node2.is_matched())){
+       std::cout << "Edge: (" << node1_id <<" "<<node2_id<<")\n";
+       auto pc = partition().get_partition_class(node1_id);
+       auto pc2 = partition().get_partition_class(node2_id);
+       std::cout << "Class 1: ";
+       for(auto x : pc){
+           std::cout << x<<" ";
+       }
+       std::cout << "\nClass 2: ";
+       for(auto x : pc2){
+           std::cout << x<<" ";
+       }
+       std::cout << "\n";
+
+   }
 	xcp_check(not node1.is_matched() and not node2.is_matched(), "adding an edge to the matching must fulfill both nodes not being matched already");
     xcp_check(not node1.is_removed() and not node2.is_removed(), "Adding an edge to a removed neighbor");
    node1.add_match_neighbor(node2_id);
@@ -177,11 +198,13 @@ void Graph::add_cycle(std::vector<std::pair<NodeId, NodeId>>& path1,
         cycle.push_back(path2[i].first);
         cycle_edges.push_back(std::make_pair(path2[i].second, path2[i].first));
     }
-    std::cout << "S: ";
-    for(auto pair : cycle_edges){
-        std::cout << "(" << pair.first <<" "<<pair.second <<") ";
+    if(debug) {
+        std::cout << "S: ";
+        for (auto pair : cycle_edges) {
+            std::cout << "(" << pair.first << " " << pair.second << ") ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
     _cycles.push_back(cycle);
     _cycle_edges.push_back(cycle_edges);
     int evenodd = 0;
@@ -299,11 +322,13 @@ bool Graph::init_tree ()
         _nodes[i].get_tree_neighbors().clear();
     }
 	bool found_root=false;
-    std::cout << "Last Matching: ";
-    for(auto x : _matching_before_building_last_tree){
-        std::cout << "("<<x.first << " "<<x.second << ") ";
+    if(debug){
+        std::cout << "Last Matching: ";
+        for(auto x : _matching_before_building_last_tree){
+            std::cout << "("<<x.first << " "<<x.second << ") ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
     set_last_matching();
 	for(NodeId i = 0; i < _nodes.size(); ++i) {
 		_nodes[i].set_even(false);
@@ -312,13 +337,16 @@ bool Graph::init_tree ()
             if (not _nodes[i].is_removed() and not _nodes[i].is_matched()) {
                 _root = i;
                 found_root = true;
-                std::cout << "Matching: ";
-                for(auto x : _match_edges){
-                    std::cout << "("<<x.first << " "<<x.second << ") ";
+                if(debug){
+                    std::cout << "Matching: ";
+                    for(auto x : _matching_before_building_last_tree){
+                        std::cout << "("<<x.first << " "<<x.second << ") ";
+                    }
+                    std::cout << "\n";
+                    std::cout << "\nMatching Size: " << _final_matching_edges.size() << " " << _match_edges.size() << "\n";
+                    std::cout << "root: " << i <<"\n";
                 }
-                std::cout << "\nMatching Size: " << _final_matching_edges.size() << " " << _match_edges.size() << "\n";
 
-                std::cout << "root: " << i <<"\n";
                 _nodes[i].set_even(true);
             }
         }
@@ -413,5 +441,5 @@ void Graph::print_matching()
     for (auto me : _final_matching_edges){
         std::cout << "e " << me.first+1 << " " << me.second+1 << "\n";
     }
-    std::cout << "\n";
+    std::cout << "Size of the matching: " << _final_matching_edges.size() << "\n";
 }

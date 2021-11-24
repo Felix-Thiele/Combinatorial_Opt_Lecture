@@ -1,6 +1,8 @@
 #include "auxiliary_classes/graph.h"
 #include <iostream>
 
+bool debug2 = false;
+
 bool find_edge(Graph& graph, NodeId& node_x, NodeId& node_y){
 	for(NodeId even_node = 0; even_node < graph.get_num_nodes(); ++even_node) {
 		if (not graph.get_node_from_id(even_node).is_removed() and graph.get_node_from_id(even_node).is_even()){
@@ -29,11 +31,13 @@ void unshrink(Graph& graph){
         if(graph.get_node_from_id(cycle_vec[0]).is_removed()){
             continue;
         }
-        std::cout << "U: ";
-        for(auto pair : cycle_edges_vec){
-            std::cout <<"("<< pair.first <<" "<<pair.second << ") ";
+        if(debug2) {
+            std::cout << "U: ";
+            for (auto pair : cycle_edges_vec) {
+                std::cout << "(" << pair.first << " " << pair.second << ") ";
+            }
+            std::cout << ")\n";
         }
-        std::cout << ")\n";
         graph.partition().unshrink(cycle_vec);
         /**
          * find the unique node on this cycle that is currently matched
@@ -72,7 +76,7 @@ void unshrink(Graph& graph){
         }
         int matched_to_outside_edge = 0;
         for(int i = 0; i < cycle_edges_vec.size(); i++){
-            if(cycle_edges_vec[i].first == matched_to_outside_id){
+            if( graph.partition().check_combined(cycle_edges_vec[i].first, matched_to_outside_id) ){
                 matched_to_outside_edge = i;
                 break;
             }
@@ -82,6 +86,9 @@ void unshrink(Graph& graph){
          * starting at the edge adjacent to the matching and alternating
          */
         int size_edges = cycle_edges_vec.size();
+        if(debug2) {
+            std::cout << matched_to_outside_id << " " << matched_to_outside_edge << "\n";
+        }
         for(int j = 0; j < size_edges; j++){
             if(j%2 == 0){
                 graph.remove_match_edge(cycle_edges_vec[(j+matched_to_outside_edge)%size_edges].first,
@@ -114,7 +121,12 @@ int find_split(std::vector<std::pair<NodeId, NodeId>>& path1, std::vector<std::p
 }
 
 void find_last_matching_edges(Graph& graph){
-    auto m = graph.get_last_matching();
+    std::vector<std::pair<NodeId, NodeId>> m;
+    if(2*graph.get_num_match_edges() >= graph.get_num_nodes() - graph.get_num_removed() - 1){
+        m = graph.get_matching();
+    } else {
+        m = graph.get_last_matching();
+    }
     for(int i = 0; i < m.size(); i++){
         graph.add_final_matching_edge( std::make_pair(m[i].first, m[i].second) );
     }
@@ -132,17 +144,16 @@ bool perfect_matching(Graph& graph) {
         //std::cout << "Found the edge " << x << " " << y << "\n";
 		Node& node_x = graph.get_node_from_id(x);
 		Node& node_y = graph.get_node_from_id(y);
-		std::cout << "(" << x << " " << y << "): ";
-
-
+		if(debug2){
+            std::cout << "(" << x << " " << y << "): ";
+		}
 		if (not graph.is_matched(y) and not graph.is_in_tree(y)){
             //augment
-		    std::cout << "M: augment ";
+		    //std::cout << "M: augment ";
 			bool parity_count = false;
 			auto path = graph.get_tree_path(x);
 			for (int i = path.size()-1; i >= 0; i--){
 			    auto tree_edge = path[i];
-                std::cout <<"("<< tree_edge.second << " " << tree_edge.first << ") ";
                 if (parity_count){
                     //graph.add_match_edge(tree_edge.first, tree_edge.second);
   				} else {
@@ -153,7 +164,9 @@ bool perfect_matching(Graph& graph) {
 			parity_count = false;
             for (int i = path.size()-1; i >= 0; i--){
                 auto tree_edge = path[i];
-                std::cout <<"("<< tree_edge.second << " " << tree_edge.first << ") ";
+                if(debug2) {
+                    std::cout << "(" << tree_edge.second << " " << tree_edge.first << ") ";
+                }
                 if (parity_count){
                     graph.add_match_edge(tree_edge.first, tree_edge.second);
                 } else {
@@ -162,7 +175,9 @@ bool perfect_matching(Graph& graph) {
                 parity_count = not parity_count;
             }
             graph.add_match_edge(x,y);
-			std::cout << "\n";
+            if(debug2) {
+                std::cout << "\n";
+            }
             unshrink(graph);
 			if (2 * graph.get_num_match_edges() >= graph.get_num_nodes() - graph.get_num_removed() - 1){
                 find_last_matching_edges(graph);
@@ -172,7 +187,7 @@ bool perfect_matching(Graph& graph) {
 			}
 		} else if (not graph.is_in_tree(y) and graph.is_matched(y)){
 			//extend
-			std::cout << "T: (" << x << " " << y << ") (" << y << " " << node_y.get_match_neighbors()[0] << ")\n";
+			//std::cout << "T: (" << x << " " << y << ") (" << y << " " << node_y.get_match_neighbors()[0] << ")\n";
             graph.add_tree_edge(x, y);
             graph.add_tree_edge(y, node_y.get_match_neighbors()[0]);
 
