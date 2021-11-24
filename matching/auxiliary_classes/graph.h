@@ -79,7 +79,7 @@ public:
 
 
    void remove_node(NodeId n){
-       std::cout << n << " ";
+       //std::cout << n << " ";
        _nodes[n].remove();
        _removed_count++;
    }

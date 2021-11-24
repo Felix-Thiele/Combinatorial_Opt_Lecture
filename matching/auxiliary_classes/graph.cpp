@@ -436,10 +436,10 @@ void Graph::add_final_matching_edge(std::pair<NodeId, NodeId> p){
 
 void Graph::print_matching()
 {
-    std::cout << "\n";
+    //std::cout << "\n";
     std::cout << "p edge " << get_num_nodes() << " " << get_num_match_edges() << "\n";
     for (auto me : _final_matching_edges){
         std::cout << "e " << me.first+1 << " " << me.second+1 << "\n";
     }
-    std::cout << "Size of the matching: " << _final_matching_edges.size() << "\n";
+    //std::cout << "Size of the matching: " << _final_matching_edges.size() << "\n";
 }

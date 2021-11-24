@@ -220,7 +220,9 @@ bool perfect_matching(Graph& graph) {
  * @param graph
  */
 void delete_tree(Graph& graph){
-    std::cout << "!!! D: ";
+    if (debug2){
+        std::cout << "!!! D: ";
+    }
     for(NodeId nodeid = 0; nodeid < graph.get_num_nodes(); nodeid++){
         auto node = graph.get_node_from_id(nodeid);
         if(graph.is_in_tree(nodeid)){
@@ -236,7 +238,9 @@ void delete_tree(Graph& graph){
             }
         }
     }
-    std::cout << "!!!\n";
+    if (debug2){
+        std::cout << "!!!\n";
+    }
     graph.init_tree();
 }
 
