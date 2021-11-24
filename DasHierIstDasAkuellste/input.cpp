@@ -21,7 +21,7 @@ std::vector<std::string> split(std::string str){
 }
 
 Graph read_graph(){
-    std::ifstream file("C:\\Users\\maxmu\\CLionProjects\\untitled1\\instances\\queen5_5.dmx");
+    std::ifstream file("C:\\Users\\maxmu\\CLionProjects\\untitled1\\instances\\lu980.dmx");
     std::string line;
     std::getline(file, line);
     line.erase(line.begin(), line.begin()+7);

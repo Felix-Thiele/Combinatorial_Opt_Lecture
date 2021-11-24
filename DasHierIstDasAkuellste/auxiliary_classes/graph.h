@@ -10,6 +10,7 @@
 
 #include "node.h"
 #include "partition.h"
+#include <iostream>
 
 typedef unsigned LargeUnsigned;
 typedef LargeUnsigned size_type;
@@ -24,32 +25,11 @@ public:
    size_type get_num_edges();
    size_type get_num_tree_edges();
    size_type get_num_match_edges();
-   size_type get_num_removed(){
-       return _removed_count;
-   }
-    bool is_matched(NodeId n){
-        for(int m = 0; m < get_num_nodes(); m++){
-            if(_partition.check_combined(n,m) and get_node_from_id(m).is_matched()){
-                return true;
-            }
-        }
-    }
-    bool is_in_tree(NodeId n){
-        for(int m = 0; m < get_num_nodes(); m++){
-            if(_partition.check_combined(n,m) and get_node_from_id(m).is_in_tree()){
-                return true;
-            }
-        }
-    }
-   bool has_exposed_node(){
-       for(int i=0; i < _nodes.size(); i++){
-           auto node = _nodes[i];
-           if(not node.is_removed() and not is_matched(i)){
-               return true;
-           }
-       }
-       return false;
-   }
+   size_type get_num_removed();
+
+   bool is_matched(NodeId n);
+   bool is_in_tree(NodeId n);
+   bool has_exposed_node();
 
    Partition<NodeId>& partition();
 
@@ -61,13 +41,8 @@ public:
    void add_tree_edge (NodeId node1_id, NodeId node2_id);
    void add_match_edge (NodeId node1_id, NodeId node2_id);
 
-   void add_circle (std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>);
-   std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>> last_added_circle ();
-   bool has_circle();
+   bool has_nodes();
 
-   bool has_nodes(){
-       return _removed_count != get_num_nodes();
-   }
    bool has_cycle();
    void add_cycle(std::vector<std::pair<NodeId, NodeId>>& path1,
                   std::vector<std::pair<NodeId, NodeId>>& path2,
@@ -87,6 +62,8 @@ public:
    //combine two nodes
    void combine(NodeId node1_id, NodeId node2_id, int evenodd);
 
+   void combine(std::vector<NodeId> vec, int evenodd);
+
    // check if combined
    bool check_combined(NodeId node1_id, NodeId node2_id);
 
@@ -95,8 +72,14 @@ public:
 
    void print_matching();
 
+   void set_last_matching();
+   std::vector<std::pair<NodeId, NodeId>>& get_last_matching();
+
+   void add_final_matching_edge(std::pair<NodeId, NodeId> p);
+
 
    void remove_node(NodeId n){
+       std::cout << n << " ";
        _nodes[n].remove();
        _removed_count++;
    }
@@ -120,11 +103,13 @@ private:
    std::vector<std::pair<NodeId, NodeId>> _match_edges;
    size_type _num_match_edges = 0;
 
+    std::vector<std::pair<NodeId, NodeId>> _matching_before_building_last_tree;
+
    std::vector<std::vector<NodeId>> _cycles;
    std::vector<std::vector<std::pair<NodeId,NodeId>>> _cycle_edges;
 
-   // _circles saves circles by saving an edge and two vectors of edges form each vertex in the edge to a ancestor in the tree
-   std::vector<std::tuple<std::vector<std::pair<NodeId, NodeId>>, std::vector<std::pair<NodeId, NodeId>>, std::pair<NodeId, NodeId>>> _circles;
+   std::vector<std::pair<NodeId, NodeId>> _final_matching_edges;
+
 }; // class Graph
 
 

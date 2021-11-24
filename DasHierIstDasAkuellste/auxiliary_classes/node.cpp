@@ -28,6 +28,9 @@ std::vector<NodeId> & Node::get_tree_neighbors ()
 
 std::vector<NodeId> & Node::get_match_neighbors ()
 {
+    if(_match_neighbors.size() > 1){
+        throw "Too many matching edges!";
+    }
    return _match_neighbors;
 }
 
